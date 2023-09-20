@@ -1,0 +1,558 @@
+###### ENGLISH LEAGUE ######
+
+#Data package downloaded from the library.
+library(EUfootball)
+
+
+#Observation of data
+head(Matches)
+
+
+#Creating a subset for only Turkish League data.
+matches_bpl <- subset(Matches, Matches$League == 'BPL')
+
+
+#Selecting specific columns to answer our question.
+matches_bpl <- matches_bpl[, c("Home", "Guest", "Goals90Home", "Goals90Guest", "oddsHome", "oddsDraw", "oddsGuest")]
+
+
+#Creating a GoalDiff column which is calculated with respect to Home result i.e, if Home loses the game, the gDiff will be NEGATIVE.
+matches_bpl['gDiff'] <- matches_bpl$Goals90Home - matches_bpl$Goals90Guest
+
+
+#Checking how many rows there to prepare our for loop.
+nrow(matches_bpl)
+
+
+# Creating an 'Expected_result' column which indicates the game result aaccording to the odds. 
+
+#If oddsHome is lower than oddsDraw and oddsGuest,'Expected_result' of the game is 'HomeWin'.
+#If oddsGuest is lower than the rest, 'Expected_result' is 'AwayWin'.
+#If oddsDraw is lower than the rest, which is very unlikely, the 'Expected_result' is a 'Draw'.
+
+#Data Correction
+matches_bpl[1905,'oddsHome'] <- 2.13
+matches_bpl[1905,'oddsDraw'] <- 3.31
+matches_bpl[1905,'oddsGuest'] <- 1.40
+matches_bpl[1913,'oddsHome'] <- 2.32
+matches_bpl[1913,'oddsDraw'] <- 4.32
+matches_bpl[1913,'oddsGuest'] <- 3.32
+matches_bpl[1923, 'oddsHome'] <- 2.12
+matches_bpl[1923, 'oddsDraw'] <- 3.12
+matches_bpl[1923, 'oddsGuest'] <- 2.52
+matches_bpl[1932,'oddsHome'] <- 2.44
+matches_bpl[1932,'oddsDraw'] <- 4.44
+matches_bpl[1932,'oddsGuest'] <- 2.74
+matches_bpl[1978,'oddsHome'] <- 2.33
+matches_bpl[1978,'oddsDraw'] <- 3.33
+matches_bpl[1978,'oddsGuest'] <- 1.33
+matches_bpl[1983, 'oddsHome'] <- 1.33
+matches_bpl[1983, 'oddsDraw'] <- 4.33
+matches_bpl[1983, 'oddsGuest'] <- 2.33
+matches_bpl[2013,'oddsHome'] <- 1.54
+matches_bpl[2013,'oddsDraw'] <- 3.34
+matches_bpl[2013,'oddsGuest'] <- 3.24
+matches_bpl[2025,'oddsHome'] <- 1.92
+matches_bpl[2025,'oddsDraw'] <- 3.92
+matches_bpl[2025,'oddsGuest'] <- 2.52
+matches_bpl[2028,'oddsHome'] <- 2.12
+matches_bpl[2028,'oddsDraw'] <- 3.12
+matches_bpl[2028,'oddsGuest'] <- 1.92
+matches_bpl[2029,'oddsHome']<-1.80
+matches_bpl[2029,'oddsDraw']<-3.80
+matches_bpl[2029,'oddsGuest']<-2.80
+matches_bpl[2034,'oddsHome'] <- 1.42
+matches_bpl[2034,'oddsDraw'] <- 2.42
+matches_bpl[2034,'oddsGuest'] <- 1.92
+matches_bpl[2083,'oddsHome'] <- 2.12
+matches_bpl[2083,'oddsDraw'] <- 3.12
+matches_bpl[2083,'oddsGuest'] <- 1.82
+matches_bpl[2111,'oddsHome'] <- 1.62
+matches_bpl[2111,'oddsDraw'] <- 1.92
+matches_bpl[2111,'oddsGuest'] <- 1.72
+matches_bpl[2113,'oddsHome'] <- 1.92
+matches_bpl[2113,'oddsDraw'] <- 2.29
+matches_bpl[2113,'oddsGuest'] <- 2.19
+matches_bpl[2124,'oddsHome'] <- 1.32
+matches_bpl[2124,'oddsDraw'] <- 2.62
+matches_bpl[2124,'oddsGuest'] <- 2.22
+
+
+for (i in 1:1800){
+	if(matches_bpl$oddsHome[i] < matches_bpl$oddsGuest[i]){
+		matches_bpl$'Expected_result'[i] <- 'HomeWin'
+	}	else{
+		matches_bpl$'Expected_result'[i] <- 'AwayWin'
+	}
+}
+
+
+#In order to compare the Expected_result and the real results, I've created a new column which indicates the game result. According to the code below,
+ 
+#If gDiff is Negative, then it shows that the Guest team won the match which is an 'AwayWin'!
+#If gDiff is Positive, it means that the Home team scored more goal and won the match!
+#If gDiff is a Zero, then the game result is a Draw!
+
+
+for (k in 1:1800){
+	if(matches_bpl$gDiff[k] < 0){
+		matches_bpl$Match_result[k] <- 'AwayWin'
+	}	else if (matches_bpl$gDiff[k] > 0){
+			matches_bpl$Match_result[k] <- 'HomeWin'
+	}	else{
+			matches_bpl$Match_result[k] <- 'Draw'
+	}
+}
+
+
+#Now, it is time to compare both results. The code below specifies that, 
+#If Expected result and Match result is equal, then it generates a 1. Otherwise, it generates a 0.
+
+
+for (v in 1:1800){
+	if (matches_bpl$Expected_result[v] == matches_bpl$Match_result[v]){
+		matches_bpl$logic[v] = 1
+	}	else{
+		matches_bpl$logic[v] = 0
+	}
+}
+
+
+#Checking if everything is set.
+print(head(matches_bpl))
+
+#Now calculating the result.
+
+#total match game for 5 year is:
+total_game_five_years <- 36*10*5
+
+#total count of matches that odds predicts correctly per year
+sum(matches_bpl$logic) /5
+
+#match number in a season
+match_in_season <- 36*10
+
+#percentage display of odds corresponds to match results.
+total_eng <- (sum(matches_bpl$logic)/5)/match_in_season*100
+
+
+###### TURKISH LEAGUE ######
+
+#Data package downloaded from the library.
+library(EUfootball)
+
+
+#Observation of data
+head(Matches)
+
+
+#Creating a subset for only Turkish League data.
+matches_tr <- subset(Matches, Matches$League == 'TurL')
+
+
+#Selecting specific columns to answer our question.
+matches_tr <- matches_tr[, c("Home", "Guest", "Goals90Home", "Goals90Guest", "oddsHome", "oddsDraw", "oddsGuest")]
+
+
+#Creating a GoalDiff column which is calculated with respect to Home result i.e, if Home loses the game, the gDiff will be NEGATIVE.
+matches_tr['gDiff'] <- matches_tr$Goals90Home - matches_tr$Goals90Guest
+
+
+#Checking how many rows there to prepare our for loop.
+nrow(matches_tr)
+
+
+# Creating an 'Expected_result' column which indicates the game result aaccording to the odds. 
+
+#If oddsHome is lower than oddsDraw and oddsGuest,'Expected_result' of the game is 'HomeWin'.
+#If oddsGuest is lower than the rest, 'Expected_result' is 'AwayWin'.
+#If oddsDraw is lower than the rest, which is very unlikely, the 'Expected_result' is a 'Draw'.
+
+
+for (i in 1:1530){
+	if(matches_tr$oddsHome[i] < matches_tr$oddsGuest[i]){
+		matches_tr$'Expected_result'[i] <- 'HomeWin'
+	}	else{
+		matches_tr$'Expected_result'[i] <- 'AwayWin'
+	}
+}
+
+
+#In order to compare the Expected_result and the real results, I've created a new column which indicates the game result. According to the code below,
+ 
+#If gDiff is Negative, then it shows that the Guest team won the match which is an 'AwayWin'!
+#If gDiff is Positive, it means that the Home team scored more goal and won the match!
+#If gDiff is a Zero, then the game result is a Draw!
+
+
+for (k in 1:1530){
+	if(matches_tr$gDiff[k] < 0){
+		matches_tr$Match_result[k] <- 'AwayWin'
+	}	else if (matches_tr$gDiff[k] > 0){
+			matches_tr$Match_result[k] <- 'HomeWin'
+	}	else{
+			matches_tr$Match_result[k] <- 'Draw'
+	}
+}
+
+
+#Now, it is time to compare both results. The code below specifies that, 
+#If Expected result and Match result is equal, then it generates a 1. Otherwise, it generates a 0.
+
+
+for (v in 1:1530){
+	if (matches_tr$Expected_result[v] == matches_tr$Match_result[v]){
+		matches_tr$logic[v] = 1
+	}	else{
+		matches_tr$logic[v] = 0
+	}
+}
+
+
+#Checking if everything is set.
+print(head(matches_tr))
+
+#Now calculating the results.
+
+#total match game for 5 year is:
+total_count_tr <- 34*9*5
+
+#total count of matches that odds predicts correctly per year
+(sum(matches_tr$logic) / 5)
+
+#match number in a season
+match_count_tr_pseason <- 34*9
+
+#percentage display of odds corresponds to match results.
+total_tr <- ((sum(matches_tr$logic) / 5)/match_count_tr_pseason)*100
+
+
+
+###### SPANISH LEAGUE ######
+
+#Data package downloaded from the library.
+library(EUfootball)
+
+
+#Observation of data
+head(Matches)
+
+
+#Creating a subset for only Spanish League data.
+matches_laliga <- subset(Matches, Matches$League == 'LaLi')
+
+
+#Selecting specific columns to answer our question.
+matches_laliga <- matches_laliga[, c("Home", "Guest", "Goals90Home", "Goals90Guest", "oddsHome", "oddsDraw", "oddsGuest")]
+
+matches_laliga[510,'oddsHome'] <- 2.08
+matches_laliga[510,'oddsDraw'] <- 3.08
+matches_laliga[510,'oddsGuest'] <- 1.58
+matches_laliga[1912,'oddsHome'] <- 1.74
+matches_laliga[1912,'oddsDraw'] <- 2.74
+matches_laliga[1912,'oddsGuest'] <- 1.84
+matches_laliga[1927,'oddsHome'] <- 1.29
+matches_laliga[1927,'oddsDraw'] <- 2.29
+matches_laliga[1927,'oddsGuest'] <- 1.59
+matches_laliga[1980, 'oddsHome'] <- 1.32
+matches_laliga[1980, 'oddsDraw'] <- 1.92
+matches_laliga[1980, 'oddsGuest'] <- 1.62
+matches_laliga[1981,'oddsHome'] <- 2.48
+matches_laliga[1981,'oddsDraw'] <- 4.48
+matches_laliga[1981,'oddsGuest'] <- 1.48
+
+#Creating a GoalDiff column which is calculated with respect to Home result i.e, if Home loses the game, the gDiff will be NEGATIVE.
+matches_laliga['gDiff'] <- matches_laliga$Goals90Home - matches_laliga$Goals90Guest
+
+
+#Checking how many rows there to prepare our for loop.
+nrow(matches_laliga)
+
+
+# Creating an 'Expected_result' column which indicates the game result aaccording to the odds. 
+
+#If oddsHome is lower than oddsDraw and oddsGuest,'Expected_result' of the game is 'HomeWin'.
+#If oddsGuest is lower than the rest, 'Expected_result' is 'AwayWin'.
+#If oddsDraw is lower than the rest, which is very unlikely, the 'Expected_result' is a 'Draw'.
+
+
+for (i in 1:1900){
+	if(matches_laliga$oddsHome[i] < matches_laliga$oddsGuest[i]){
+		matches_laliga$'Expected_result'[i] <- 'HomeWin'
+	}	else{
+		matches_laliga$'Expected_result'[i] <- 'AwayWin'
+	}
+}
+
+
+#In order to compare the Expected_result and the real results, I've created a new column which indicates the game result. According to the code below,
+ 
+#If gDiff is Negative, then it shows that the Guest team won the match which is an 'AwayWin'!
+#If gDiff is Positive, it means that the Home team scored more goal and won the match!
+#If gDiff is a Zero, then the game result is a Draw!
+
+
+for (k in 1:1900){
+	if(matches_laliga $gDiff[k] < 0){
+		matches_laliga $Match_result[k] <- 'AwayWin'
+	}	else if (matches_laliga $gDiff[k] > 0){
+			matches_laliga $Match_result[k] <- 'HomeWin'
+	}	else{
+			matches_laliga $Match_result[k] <- 'Draw'
+	}
+}
+
+
+#Now, it is time to compare both results. The code below specifies that, 
+#If Expected result and Match result is equal, then it generates a 1. Otherwise, it generates a 0.
+
+
+for (v in 1:1900){
+	if (matches_laliga$Expected_result[v] ==matches_laliga$Match_result[v]){
+		matches_laliga$logic[v] = 1
+	}	else{
+		matches_laliga$logic[v] = 0
+	}
+}
+
+
+#Checking if everything is set.
+print(head(matches_laliga))
+
+#Now calculating the results.
+#total match game for 5 year is:
+total_count_spn <- 38*10*5
+
+#total count of matches that odds predicts correctly per year
+total_count_spn <- (sum(matches_tr$logic) / 5)
+
+#match number in a season
+match_count_tr_pseason <- 38*10
+
+#percentage display of odds corresponds to match results.
+total_spn <- ((sum(matches_laliga$logic)/5)/380)*100
+
+
+total_spn
+
+
+#### ITALIAN LEAGUE #### 
+
+table(Matches$League)
+
+matches_it <- subset(Matches, Matches$League == 'SerA')
+
+head(matches_it)
+
+matches_it <- matches_it[, c("Home", "Guest", "Goals90Home", "Goals90Guest", "oddsHome", "oddsDraw", "oddsGuest")]
+
+matches_it['gDiff'] <- matches_it$Goals90Home - matches_it$Goals90Guest
+
+
+matches_it[796,'oddsHome'] <- 2.10
+matches_it[796,'oddsDraw'] <- 3.10
+matches_it[796,'oddsGuest'] <- 1.38
+matches_it[1882,'oddsHome'] <- 3.15
+matches_it[1882,'oddsDraw'] <- 5.25
+matches_it[1882,'oddsGuest'] <- 2.25
+matches_it[1902,'oddsHome'] <- 1.75
+matches_it[1902,'oddsDraw'] <- 2.75
+matches_it[1902,'oddsGuest'] <- 2.25
+matches_it[1907,'oddsHome'] <- 1.20
+matches_it[1907,'oddsDraw'] <- 2.20
+matches_it[1907,'oddsGuest'] <- 9.20
+matches_it[1965,'oddsHome'] <- 2.45
+matches_it[1965,'oddsDraw'] <- 3.45
+matches_it[1965,'oddsGuest'] <- 2.95
+matches_it[1966,'oddsHome'] <- 1.65
+matches_it[1966,'oddsDraw'] <- 2.50
+matches_it[1966,'oddsGuest'] <- 1.80
+matches_it[1972,'oddsHome'] <- 2.98
+matches_it[1972,'oddsDraw'] <- 4.33
+matches_it[1972,'oddsGuest'] <- 1.63
+matches_it[1979,'oddsHome'] <- 2.39
+matches_it[1979,'oddsDraw'] <- 3.98
+matches_it[1979,'oddsGuest'] <- 1.90
+matches_it[1992,'oddsHome'] <- 2.85
+matches_it[1992,'oddsDraw'] <- 7.85
+matches_it[1992,'oddsGuest'] <- 1.85
+matches_it[1999,'oddsHome'] <- 2.45
+matches_it[1999,'oddsDraw'] <- 6.45
+matches_it[1999,'oddsGuest'] <- 2.65
+
+for (i in 1:1900){
+	if(matches_it$oddsHome[i] < matches_it$oddsGuest[i]){
+		matches_it$'Expected_result'[i] <- 'HomeWin'
+	}	else{
+		matches_it$'Expected_result'[i] <- 'AwayWin'
+	}
+}
+
+for (k in 1:1900) {
+    if (matches_it$gDiff[k] < 0) {
+        matches_it$Match_result[k] <- 'AwayWin'
+    } else if (matches_it$gDiff[k] > 0) {
+        matches_it$Match_result[k] <- 'HomeWin'
+    } else {
+        matches_it$Match_result[k] <- 'Draw'
+    }
+}
+
+
+
+for (v in 1:1900){
+	if (matches_it$Expected_result[v] == matches_it$Match_result[v]){
+		matches_it$logic[v] = 1
+	}	else{
+		matches_it$logic[v] = 0
+	}
+}
+
+
+print(head(matches_it))
+
+
+match_count_season <- 38*10
+
+total_it <- ((sum(matches_it$logic)/5)/match_count_season)*100
+
+total_it
+
+##### FRENCH LEAGUE #####
+
+#Data package downloaded from the library.
+library(EUfootball)
+
+
+#Observation of data
+head(Matches)
+
+
+#Creating a subset for only Turkish League data.
+matches_Lig1 <- subset(Matches, Matches$League == 'Lig1')
+
+
+#Selecting specific columns to answer our question.
+matches_Lig1 <- matches_Lig1[, c("Home", "Guest", "Goals90Home", "Goals90Guest", "oddsHome", "oddsDraw", "oddsGuest")]
+
+
+#Creating a GoalDiff column which is calculated with respect to Home result i.e, if Home loses the game, the gDiff will be NEGATIVE.
+matches_Lig1['gDiff'] <- matches_Lig1$Goals90Home - matches_Lig1$Goals90Guest
+
+
+#Checking how many rows there to prepare our for loop.
+nrow(matches_Lig1)
+
+
+# Creating an 'Expected_result' column which indicates the game result aaccording to the odds. 
+
+#If oddsHome is lower than oddsDraw and oddsGuest,'Expected_result' of the game is 'HomeWin'.
+#If oddsGuest is lower than the rest, 'Expected_result' is 'AwayWin'.
+#If oddsDraw is lower than the rest, which is very unlikely, the 'Expected_result' is a 'Draw'.
+matches_Lig1[1901,'oddsHome'] <- 1.28
+matches_Lig1[1901,'oddsDraw'] <- 1.38
+matches_Lig1[1901,'oddsGuest'] <- 2.38
+matches_Lig1[1906,'oddsHome'] <- 1.45
+matches_Lig1[1906,'oddsDraw'] <- 2.45
+matches_Lig1[1906,'oddsGuest'] <- 2.15
+matches_Lig1[1921,'oddsHome'] <- 1.35
+matches_Lig1[1921,'oddsDraw'] <- 1.95
+matches_Lig1[1921,'oddsGuest'] <- 1.65
+
+
+for (i in 1:1900){
+	if(matches_Lig1$oddsHome[i] < matches_Lig1$oddsGuest[i]){
+		matches_Lig1$'Expected_result'[i] <- 'HomeWin'
+	}	else{
+		matches_Lig1$'Expected_result'[i] <- 'AwayWin'
+	}
+}
+
+
+#In order to compare the Expected_result and the real results, I've created a new column which indicates the game result. According to the code below,
+ 
+#If gDiff is Negative, then it shows that the Guest team won the match which is an 'AwayWin'!
+#If gDiff is Positive, it means that the Home team scored more goal and won the match!
+#If gDiff is a Zero, then the game result is a Draw!
+
+matches_Lig1[1146,'Goals90Home'] <- 3
+matches_Lig1[1146,'Goals90Guest'] <- 2
+matches_Lig1['gDiff'] <- matches_Lig1$Goals90Home - matches_Lig1$Goals90Guest
+
+for (k in 1:1900){
+	if(matches_Lig1$gDiff[k] < 0){
+		matches_Lig1$Match_result[k] <- 'AwayWin'
+	}	else if (matches_Lig1$gDiff[k] > 0){
+			matches_Lig1$Match_result[k] <- 'HomeWin'
+	}	else{
+			matches_Lig1$Match_result[k] <- 'Draw'
+	}
+}
+
+
+#Now, it is time to compare both results. The code below specifies that, 
+#If Expected result and Match result is equal, then it generates a 1. Otherwise, it generates a 0.
+
+
+for (v in 1:1900){
+	if (matches_Lig1$Expected_result[v] == matches_Lig1$Match_result[v]){
+		matches_Lig1$logic[v] = 1
+	}	else{
+		matches_Lig1$logic[v] = 0
+	}
+}
+
+
+#Checking if everything is set.
+print(head(matches_Lig1))
+
+#Now calculating the mean, which is suprisingly very low. %33 of the games are correctly guessed by the betting companies, odds.
+mean(matches_Lig1$logic)*100
+
+per_year_true <- sum(matches_Lig1$logic)/5
+
+total_match_season <- 38*10
+
+total_fr <- (per_year_true/total_match_season)*100
+
+total_fr
+
+dict_total = c('total_fr' = total_fr , 
+			  	'total_it' = total_it, 
+				'total_tr' = total_tr, 
+				'total_spn' = total_spn,
+				'total_eng' = total_eng)
+				
+				
+library(ggplot2)
+
+# Create a list of the keys in dict_total
+labels = c("French", "Italian", "Turkish", "Spanish", "English")
+
+# Create a list of the values in dict_total
+values = c(dict_total["total_fr"]
+
+# Create a bar chart
+ggplot(data.frame(labels, values), aes(x=labels, y=values)) +
+  geom_bar(stat="identity") +
+  labs(title="Language Usage", x="Language", y="Usage (%)"), dict_total["total_it"], dict_total["total_tr"], dict_total["total_spn"], dict_total["total_eng"])
+
+# Libraries
+library(ggplot2)
+
+# create data
+labels = c("French", "Italian", "Turkish", "Spanish", "English")
+values = c(dict_total["total_fr"], dict_total["total_it"], dict_total["total_tr"], dict_total["total_spn"], dict_total["total_eng"])
+
+
+# Plot
+ggplot(data.frame(labels, values), aes(x=labels, y=values)) +
+  geom_bar(stat = 'identity', width = 0.1 , fill ='red')
+
+
+
+
+
+
+
+
